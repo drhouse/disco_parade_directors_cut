@@ -1,64 +1,52 @@
 # ZERO PARADES DIRECTOR'S CUT Voice Override
 
-An unofficial update of [ZERO PARADES Voice Override](https://github.com/zeroparade/disco_parade) by **zeroparade**, fixed to run on the **Director's Cut** game update (Unity 6000.3.15f1).
+A compatibility update so **[Disco Parade (ZERO PARADES Voice Override)](https://www.nexusmods.com/zeroparadesfordeadspies/mods/7)** by **zeroparade** works on the **Director's Cut** update of the game.
 
-All credit for the mod and the voice packs goes to the original author. This repo only contains the compatibility fixes needed for the Director's Cut build.
+The original mod crashes the game on the Director's Cut. This update fixes that. Voices, hotkeys and settings are unchanged. All credit for the mod and its voice packs goes to zeroparade.
 
-## What was broken
-
-After the Director's Cut update, the original mod (v0.3.21) crashed the game on startup / the loading screen:
-
-1. **The BepInEx build the original installer pins (6.0.0-be.755) can't start on Unity 6000.3** — Il2CppInterop can't locate its runtime hooks (`Class::Init signatures have been exhausted`) and the game aborts.
-2. **Unity 6000.3 crashes when hosting the mod's injected `MonoBehaviour`**, even with all of its callbacks disabled.
-
-## What changed (v0.3.22)
-
-- The audio runner is now a plain class driven every frame by a Harmony hook on `UnityEngine.EventSystems.EventSystem.Update`, instead of an injected `MonoBehaviour`.
-- The on-screen toasts (hotkey/state popups) were rebuilt with built-in uGUI components (`Canvas`/`Image`/`Text`) instead of `OnGUI`.
-- Built against BepInEx **6.0.0-be.788**.
-- Debug aid: names listed one per line in `BepInEx\voice-override-skip.txt` are skipped (patch method names such as `PlayVO`, or `Runner`). Leave the file absent for normal use.
-
-Voice-pack format, folders, config and hotkeys are unchanged from the original.
-
-## Requirements
-
-- ZERO PARADES Director's Cut (Windows x64).
-- **A BepInEx 6 IL2CPP build that works on the Director's Cut.** Stock be.755 does not. Tested with BepInEx **6.0.0-be.788** plus a patched `Il2CppInterop.Runtime.dll` that resolves its runtime hooks on Unity 6000.3.
-- The voice packs from the original mod's installer.
+> **To the original author:** this was made because the mod stopped working after the game update. If for any reason you want it taken down, just ask and it will be removed.
 
 ## Install
 
-1. Set up a working BepInEx 6 (see Requirements) and launch the game once so it generates its interop files.
-2. Install the voice packs with the original mod's installer (`Install.bat`), choosing male / female / extras / narrator.
-   - **Don't let it replace BepInEx or the plugin DLL.** Remove any loose `ZeroParadesVoiceOverride.dll` next to `Install.bat` before running it, or the old broken DLL gets copied into `plugins`.
-3. Copy `BepInEx\plugins\ZeroParadesVoiceOverride.dll` from this repo into your game's `BepInEx\plugins\`, replacing the old one.
-4. Launch the game. `BepInEx\voice-override-logs\voice-override.log` should show `PLUGIN_READY v0.3.22`.
+1. Install the original mod from [Nexus](https://www.nexusmods.com/zeroparadesfordeadspies/mods/7) as usual (run `Install.bat`, pick your voices).
+2. Download **[ZeroParades-DirectorsCut-VoiceOverride-v0.3.22.zip](https://github.com/drhouse/disco_parade_directors_cut/releases/latest)**.
+3. Extract it into the game folder (the one with `ZeroParades.exe`) and **overwrite all files**.
+4. Play. The first launch takes a little longer.
+
+If you run the original `Install.bat` again later (e.g. to add voice packs), repeat steps 2–3 afterwards.
 
 ## Controls
 
-| Key | Action |
-| --- | --- |
-| F1 | Cycle presets: original VO, original + missing VO, male redub, female redub |
-| F2 | Cycle redub profile: off / male / female |
-| F3 | Toggle extra-character missing VO |
-| F4 | Toggle narrator-only missing VO |
-| F9 | Download/install voice-pack updates in game |
-| F10 | Show/write the latest dialogue report |
-| F11 | Toggle voice-pack update toasts |
-| F12 | Toggle debug toasts |
+Same as the original: **F1** presets · **F2** male/female/off · **F3** extra voices · **F4** narrator voices · **F9** update voices · **F10** dialogue report · **F11** update popups · **F12** debug popups.
 
-Rebind any key in `BepInEx\config\spore.zeroparades.voiceoverride.cfg`. For example, if another mod or trainer uses F3, change `ToggleExtraVoicesKey = F3` to `Home`.
+Keys can be changed in `BepInEx\config\spore.zeroparades.voiceoverride.cfg`.
 
-## Building
+## Using a trainer or other mods
 
-```
-dotnet build src/ZeroParadesVoiceOverride.csproj -c Release -p:GameDir="C:\path\to\ZERO PARADES"
-```
+Works alongside the OperantDossier trainer (Director's Cut update), which uses the same BepInEx setup. That trainer opens with **F3**, so change `ToggleExtraVoicesKey = F3` to another key (e.g. `Home`) in the config file above.
 
-`GameDir` must contain a BepInEx install whose `core` and `interop` folders have been generated (launch the game with BepInEx once). Output: `src/bin/Release/net6.0/ZeroParadesVoiceOverride.dll`.
+---
 
-## Troubleshooting
+<details>
+<summary>Technical details</summary>
 
-- **The game closes on the loading screen:** check `BepInEx\LogOutput.log` for `Class::Init signatures have been exhausted`. If it's there and the game crashes, your BepInEx / Il2CppInterop build doesn't support this Unity version.
-- **Voices still sound original:** make sure the matching pack is installed (`BepInEx\voice-overrides` for male), and check `voice-override.log` for `NO_REDUB_OVERRIDE`.
-- **`PATCH_METHOD_MISSING` in the log:** a future game update renamed a dialogue method the mod hooks.
+**Why it broke:** the Director's Cut moved the game to Unity 6000.3.15f1.
+- The BepInEx build the original installer uses (6.0.0-be.755) can't start on it.
+- Unity 6000.3 crashes when hosting the mod's injected `MonoBehaviour`.
+
+**What changed in v0.3.22:**
+- The audio runner is a plain class ticked by a Harmony hook on `EventSystem.Update` instead of an injected `MonoBehaviour`.
+- Toast popups were rebuilt with built-in uGUI components instead of `OnGUI`.
+- Names listed in `BepInEx\voice-override-skip.txt` are skipped (debug aid; normally absent).
+
+**What's in the zip:**
+- Official [BepInEx 6.0.0-be.788](https://builds.bepinex.dev/projects/bepinex_be/788/BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.788%2B5b766a3.zip) (LGPL-2.1).
+- `BepInEx\core\Il2CppInterop.Runtime.dll`: [Il2CppInterop](https://github.com/BepInEx/Il2CppInterop) v1.5.3 (LGPL-3.0) with two hook-resolution fixes for this Unity build. These are the OperantDossier trainer's published Director's Cut compatibility patch, reproduced from the official be.788 file. SHA-256 `750E3C8E35CA237B1E53C32FADB686F4ADC2E52BAFBDB9CF33DA7A295D81BAAB`.
+- `BepInEx\plugins\ZeroParadesVoiceOverride.dll`: built from `src/` in this repo.
+- License texts in `licenses\`.
+
+**Build:** `dotnet build src/ZeroParadesVoiceOverride.csproj -c Release -p:GameDir="C:\path\to\game"` (needs BepInEx installed there and launched once).
+
+**Troubleshooting:** logs are in `BepInEx\LogOutput.log` and `BepInEx\voice-override-logs\voice-override.log`. If the game still closes on the loading screen, check that step 3 overwrote `BepInEx\core`.
+
+</details>
